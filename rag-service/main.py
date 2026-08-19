@@ -17,6 +17,12 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError(
+        "Missing required environment variables: SUPABASE_URL and/or SUPABASE_KEY. "
+        "Please configure them in your environment or Render Dashboard."
+    )
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = FastAPI()
 
@@ -177,3 +183,8 @@ def query_stream(question: str):
         generate(),
         media_type="text/event-stream"
     )
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
