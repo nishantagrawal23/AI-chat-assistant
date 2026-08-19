@@ -17,14 +17,27 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise RuntimeError(
-        "Missing required environment variables: SUPABASE_URL and/or SUPABASE_KEY. "
-        "Please configure them in your environment or Render Dashboard."
-    )
+_supabase_client = None
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+def get_supabase():
+    global _supabase_client
+    if _supabase_client is None:
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_KEY")
+        if not url or not key:
+            raise RuntimeError(
+                "Missing required environment variables: SUPABASE_URL and/or SUPABASE_KEY. "
+                "Please configure them in your Render Dashboard under Environment Variables."
+            )
+        _supabase_client = create_client(url, key)
+    return _supabase_client
+
 app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 
 # ✅ CORS
 app.add_middleware(
@@ -108,7 +121,7 @@ async def upload_resume(file: UploadFile = File(...)):
 
     for i, chunk in enumerate(chunks):
         try:
-            res = supabase.table("resumes").insert({
+            res = get_supabase().table("resumes").insert({
                 "content": chunk,
                 "embedding": embeddings[i].tolist()
             }).execute()
@@ -132,13 +145,14 @@ async def upload_resume(file: UploadFile = File(...)):
 #     question: str
 
 def search_similar_chunks(query_embedding):
-    result = supabase.rpc(
+    result = get_supabase().rpc(
         "match_documents",
         {
             "query_embedding": query_embedding.tolist(),
             "match_count": 5
         }
     ).execute()
+
 
     return [item["content"] for item in result.data]
 
