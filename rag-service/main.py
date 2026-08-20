@@ -38,7 +38,19 @@ app = FastAPI()
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
+@app.get("/test-supabase")
+def test_supabase():
+    try:
+        result = get_supabase().table("resumes").select("*").limit(1).execute()
+        return {
+            "success": True,
+            "data": result.data
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 # ✅ CORS
 app.add_middleware(
