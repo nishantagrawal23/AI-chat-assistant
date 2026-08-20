@@ -48,8 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Load embedding model once
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+# ✅ Lazy-load embedding model on first use (prevents blocking Uvicorn startup)
+_embedding_model = None
+
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        print("🧠 Loading embedding model...")
+        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _embedding_model
+
 
 documents = []
 index = None
@@ -116,7 +124,7 @@ async def upload_resume(file: UploadFile = File(...)):
 
     print("🧠 Creating embeddings...")
     start = time.time()
-    embeddings = embedding_model.encode(chunks).astype(float)
+    embeddings = get_embedding_model().encode(chunks).astype(float)
     print("⏱ Embedding time:", time.time() - start)
 
     for i, chunk in enumerate(chunks):
@@ -162,7 +170,7 @@ def query_stream(question: str):
     
     # query_embedding = embedding_model.encode([question])
     enhanced_question = enhance_query(question)
-    query_embedding = embedding_model.encode([enhanced_question])
+    query_embedding = get_embedding_model().encode([enhanced_question])
     similar_chunks = search_similar_chunks(query_embedding[0])
     context = "\n".join(similar_chunks)[:800]
 
