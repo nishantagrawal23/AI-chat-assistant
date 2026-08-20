@@ -18,7 +18,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 _supabase_client = None
-
+print("SUPABASE_URL:", os.getenv("SUPABASE_URL"))
+print("SUPABASE_KEY exists:", bool(os.getenv("SUPABASE_KEY")))
 def get_supabase():
     global _supabase_client
     if _supabase_client is None:
