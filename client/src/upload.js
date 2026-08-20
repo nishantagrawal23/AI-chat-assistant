@@ -4,11 +4,18 @@ function Upload({ setIsUploaded }) {
     const handleUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         const formData = new FormData();
         formData.append("file", file);
+
         try {
             setIsUploaded(false);
-            await axios.post(`${import.meta.env.VITE_API_URL}/upload`, formData);
+
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/upload`,
+                formData
+            );
+
             alert("Resume uploaded!");
             setIsUploaded(true);
         } catch (err) {
@@ -16,6 +23,7 @@ function Upload({ setIsUploaded }) {
             alert("Upload failed");
         }
     };
+
     return (
         <div className="upload">
             <input type="file" onChange={handleUpload} />
