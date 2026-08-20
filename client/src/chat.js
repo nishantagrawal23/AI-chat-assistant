@@ -10,7 +10,7 @@ function Chat({ isUploaded }) {
         setLoading(true);
 
         const eventSource = new EventSource(
-            `http://localhost:8000/query-stream?question=${encodeURIComponent(q)}`
+            `${import.meta.env.VITE_API_URL}/query-stream?question=${encodeURIComponent(q)}`
         );
 
         eventSource.onmessage = (event) => {

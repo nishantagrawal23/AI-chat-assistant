@@ -1,6 +1,6 @@
 import axios from "axios";
 
-function Upload({setIsUploaded}) {
+function Upload({ setIsUploaded }) {
     const handleUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -8,7 +8,7 @@ function Upload({setIsUploaded}) {
         formData.append("file", file);
         try {
             setIsUploaded(false);
-            await axios.post("http://localhost:8000/upload", formData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/upload`, formData);
             alert("Resume uploaded!");
             setIsUploaded(true);
         } catch (err) {
